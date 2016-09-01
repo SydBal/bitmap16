@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Ubuntu:regular,bold&subset=Latin">
+    <style>
+      body {
+      font-family: 'Ubuntu';
+      }
+
+      rect.bordered {
+        stroke: #E6E6E6;
+        stroke-width:2px;
+      }
+
+      .tooltip {
+        text-align: left;
+        position: relative;
+        background: #FFFFFF ;
+        color: #7f8c8d ;
+        border: 1px solid #bdc3c7 ;
+        padding: 16px;
+        border-radius: 8px ;
+       -webkit-border-top-left-radius: 8px;
+       -webkit-border-top-right-radius: 8px;
+       -webkit-border-bottom-right-radius: 8px;
+       -webkit-border-bottom-left-radius: 8px;
+       -khtml-border-top-left-radius: 8px;
+       -khtml-border-top-right-radius: 8px;
+       -khtml-border-bottom-right-radius: 8px;
+       -khtml-border-bottom-left-radius: 8px;
+       -moz-border-radius-topleft: 8px;
+       -moz-border-radius-topright: 8px;
+       -moz-border-radius-bottomright: 8px;
+       -moz-border-radius-bottomleft: 8px;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+        border-bottom-left-radius: 8px;
+        width: 200px;
+        z-index:10000;
+        opacity: 0.8;
+      }
+
+      .tooltip:after, .tooltip:before {
+        top: 100%;
+        border: solid transparent;
+        content: " ";
+        height: 0;
+        width: 0;
+        position: absolute;
+        pointer-events: none;
+        opacity: 0.8;
+      }
+      .tooltip:after {
+        border-color: rgba(236, 240, 241, 0);
+        border-top-color: #FFFFFF ;
+        border-width: 10px;
+        left: 50%;
+        margin-left: -10px;
+        opacity: 0.8;
+      }
+      .tooltip:before {
+        border-color: rgba(44, 62, 80, 0);
+        border-top-color: #bdc3c7 ;
+        border-width: 12px;
+        left: 50%;
+        margin-left: -10px;
+      }
+
+     
+      /* Tool Tip */
+      div.tooltip span{
+        font-size:0.7em;
+        color: black;
+        font-family: Helvetica, Arial;
+      }
+      .filter_stuff .label_metric{
+        background-color: rgb(255, 255, 255);
+        background-color: rgba(255, 255, 255, 0.8);
+        padding: 3px 5px;
+        margin-right: 5px;
+        border-radius: 5px;
+      }
+
+      /* Add Animation */
+      @-webkit-keyframes animatetop {
+          from {top: -300px; opacity: 0}
+          to {top: 0; opacity: 1}
+      }
+
+      @keyframes animatetop {
+          from {top: -300px; opacity: 0}
+          to {top: 0; opacity: 1}
+      }
+
+    </style>
+    <script type="text/javascript" src="http://d3js.org/d3.v3.js"></script>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+  </head>
+  <body>
+    <div class="outer">
+      <div id="chart"></div>
+    </div>
+    <script type="text/javascript">
+      var array_info,
+          array_id_mapping = {}, // maps array_id to its position in array_info
+          metric = 'read_latency',
+          metric_info,
+          min,
+          max,
+          heatheight;
+
+      /* build mapping of array_id to its position in array_info */
+      var build_array_id_mapping = function(array_info){
+        for (i = 0; i < array_info.length; i++){
+          array_id_mapping[array_info[i].id] = i
+        }
+      }
+
+      // Sometimes needed for filters to redraw the graph completely
+      function fullReDrawOfHeatmap(){
+        /* REMOVING OLD DRAWING AND REDRAWING NEW ONE FOR PROPER REFRESH */
+        colorScale = d3.scale.quantile()
+                       .domain([min, buckets - 1, max])
+                       .range(colors);
+        d3.select("svg").remove();
+        array_id_mapping = {};
+        build_array_id_mapping(array_info);
+        initializeGraph(array_info);
+      }
+
+      // D3 HEATMAP stuff outdated
+      var margin = { top: 0, right: 0, bottom: 0, left: 0 },
+          width = screen.width, //need to adjust to screen size
+          height = screen.height,
+          gridSize = screen.width/16,
+          //N = Math.floor(screen.width / gridSize), // number of grids in horizontal
+          N = 16
+          legendElementWidth = gridSize*2,
+          buckets = 9,
+          //altered color scheme to blue (cold) -> green (healthy/average) -> red (hot)
+          colors = ["#FFFFE5","#ffffcc","#ffeda0","#fed976","#feb24c","#fd8d3c","#fc4e2a","#e31a1c","#bd0026"]; // alternatively colorbrewer.YlGnBu[9]
+          // we need to adjust the range for different metrics
+          colorScale = d3.scale.quantile()
+                         .domain([0, buckets - 1, 20])
+                         .range(colors);
+
+      // SOCKET.IO Listeners
+      // need to change to the NodeServer's IP
+      var socket = io.connect();
+      console.log(socket)
+      /* initial draw */
+      socket.on('array_info', function (data) {
+        //heatheight = data.size()
+        console.log(data)
+        heatheight = Math.ceil($(data).size() / N) * gridSize;
+        socket.emit('reply', 'got array info');
+        array_info = data;
+        build_array_id_mapping(array_info);
+        now = Date.now()/1000;
+        for (i = 0; i < array_info.length; i++){
+          array_info[i].arrive = now;
+        }
+        //Conditional for redrawing after a disconnection from socket.io, normal draw for first connection
+        if(d3.select("svg")!=undefined){
+          fullReDrawOfHeatmap(array_info)
+        }else{
+          initializeGraph(array_info);
+        };
+      });
+
+
+
+      /* refresh graph on changefeed update */
+      socket.on('update', function (data) {
+        socket.emit('reply', 'got update');
+        //update array_info after initialization
+        if (typeof array_info != "undefined") {
+          //find index of the updated array
+          pos = array_id_mapping[data.id];
+          // update array_info for the updated array
+          array_info[pos] = data;
+          array_info[pos].arrive = Date.now()/1000;
+          // update graph
+          refreshGraph(array_info, data);
+        }
+      });
+
+      //onhover tooltip
+      var tooltip = d3.select("body")
+          .append("div")
+          .style("position", "absolute")
+          .style("visibility", "hidden");
+
+
+
+      // HEATMAP FUNCTIONS
+      /* REFRESH FUNCTION - called every time socket.io updates with new changefeed data*/
+      var refreshGraph = function(array_info, data) {
+        colorScale = d3.scale.quantile()
+                       .domain([min, buckets - 1, max])
+                       .range(colors);
+        //update proper cell
+        d3.selectAll("rect").data(array_info)
+          .filter(function(d, i) {return d.id == data.id })
+          .style("fill", function(d) { return d.color; });
+      };
+
+      /* INITIALIZATION FUNCTION - called when node server initializes or browser opens */
+      var initializeGraph = function(data) {
+        console.log(data)
+        var svg = d3.select("#chart").append("svg")
+                .attr("viewBox", "0 0 "+screen.width+" "+ heatheight)
+                .attr("preserveAspectRatio", "xMinYMin meet")
+                .append("g")
+
+        cards = svg.selectAll("grids")
+                   .data(data);
+
+        cards.enter().append("rect")
+            .attr("x", function(d, i) { return (i % N) * gridSize; })
+            .attr("y", function(d, i) { return ((i - i % N) / N) * gridSize; })
+            .attr("rx", 4)
+            .attr("ry", 4)
+            .attr("class", "hour bordered")
+            .attr("width", gridSize)
+            .attr("height", gridSize)
+            .style("fill", colors[0]);
+
+
+        cards.transition()
+             .duration(1500)
+             .style("fill", function(d) { return d.color; });
+
+        cards.exit().remove();
+
+        //idea from here http://data.passiondataviz.fr/naissances/
+        //tooltip action
+        //controller_sn, time to arrive, purity version, model
+        /*cards.on("mouseover", function(d, i) {
+          tooltip.html('<div class="tooltip"><span> Array ID: '+d.id + '</span></div>');
+          tooltip.style("top", (d3.event.pageY - 200) + "px").style("left",(d3.event.pageX - 120) + "px");
+          return tooltip.style("visibility", "visible");
+        })
+        cards.on("mousemove", function(d, i){
+          return tooltip.style("top", (d3.event.pageY - 200) + "px").style("left",(d3.event.pageX - 120) + "px");
+        })
+
+        cards.on("mouseout", function(d, i) {
+          return tooltip.style("visibility", "hidden");
+        });*/
+
+        cards.transition()
+             .duration(1500)
+             .style("fill", function(d) { return colorScale(eval("d." + metric)); });
+
+        cards.exit().remove();
+      };
+
+
+    </script>
+
+  </body>
+</html>

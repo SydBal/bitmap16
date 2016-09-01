@@ -1,0 +1,15 @@
+{
+    "name": "rtaheatmap",
+    "version": "0.0.1",
+    "description": "SocketioExample",
+    "scripts": { 
+    	"start" : "node app.js" 
+    },
+    "dependencies": {
+    	"express": "latest",
+        "socket.io": "latest",
+        "rethinkdb": "latest",
+        "rethinkdb-init": "latest"
+    },
+    "author": "UCSC-PureStorage"
+}
