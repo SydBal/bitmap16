@@ -29,19 +29,26 @@ r.init({
     	}
     ]
 ).then(function (conn) {
-	generate256table(conn)
+	//generate256table(conn)
 	//getBitmapInOrder(conn)
+	recolor256("#FFFFFF", conn)
 });
 
 function generate256table(conn) {
 	for (var i = 256; i > 0; i--) {
-		r.db(dbConfig.db).table(dbConfig.tables.bitmap).replace({id:i,color:"#F00001"}).run(conn, function(err, result) {
+		r.db(dbConfig.db).table(dbConfig.tables.bitmap).insert({id:i,color:"#000000"}).run(conn, function(err, result) {
 	        if (err) throw err;
-	        console.log(result);
-	        console.log("^^ result of element " + i)
 	    });
 	};
 };
+
+function recolor256(color, conn) {
+	for (var i = 256; i > 0; i--) {
+		r.db(dbConfig.db).table(dbConfig.tables.bitmap).replace({id:i,color:color}).run(conn, function(err, result) {
+	        if (err) throw err;
+	    });
+	};
+}
 
 function getBitmapInOrder(conn){
 	var bitmapArray = []

@@ -228,7 +228,13 @@
             .attr("width", gridSize)
             .attr("height", gridSize)
             .style("fill", colors[0]);
+     
+        /* click action on cell */
+        /* TODO: OPEN POPUP */
+        cards.on("click", function(data) {
+          socket.emit("click", data)
 
+        });
 
         cards.transition()
              .duration(1500)
@@ -254,7 +260,7 @@
 
         cards.transition()
              .duration(1500)
-             .style("fill", function(d) { return colorScale(eval("d." + metric)); });
+             .style("fill", function(d) { return d.color; });
 
         cards.exit().remove();
       };

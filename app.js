@@ -24,14 +24,21 @@ app.get('/', function (req, res) {
   res.sendFile(__dirname + '/index.html');
 });
 
+var conn2;
+r.connect({host: dbConfig.host, port: dbConfig.port}, function(err, connection) {
+  conn2 = connection;
+});
+
 io.on('connection', function (socket) {
   console.log('Got a connection!');
   updateAllArrays(socket);
 
   /* listen for clicks  and emit the results back to the proper client*/
   socket.on('click', function (data){
-    clickresponse(socket, data.array_id);
-    console.log("User "+socket.id+" clicked cell for "+data.array_id+" of company "+data.company)
+    r.db(dbConfig.db).table(dbConfig.tables.bitmap).replace({id:data.id,color:"#FF0000"}).run(conn2, function(err, result) {
+      if (err) throw err;
+      console.log(result)
+    });
   });
 });
 
