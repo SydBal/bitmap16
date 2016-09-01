@@ -35,7 +35,7 @@ io.on('connection', function (socket) {
 
   /* listen for clicks  and emit the results back to the proper client*/
   socket.on('click', function (data){
-    r.db(dbConfig.db).table(dbConfig.tables.bitmap).replace({id:data.id,color:"#FF0000"}).run(conn2, function(err, result) {
+    r.db(dbConfig.db).table(dbConfig.tables.bitmap).replace({id:data.id,color:data.color}).run(conn2, function(err, result) {
       if (err) throw err;
       console.log(result)
     });
