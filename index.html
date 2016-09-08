@@ -47,6 +47,10 @@
 
       /* build mapping of array_id to its position in array_info */
       var build_array_id_mapping = function(array_info){
+        //sort incoming array info according to id
+        array_info.sort(function(a, b){
+          return a.id - b.id;
+        })
         for (i = 0; i < array_info.length; i++){
           array_id_mapping[array_info[i].id] = i
         }
