@@ -31,7 +31,7 @@ r.init({
 ).then(function (conn) {
 	//generate256table(conn)
 	//getBitmapInOrder(conn)
-	recolor256("#F000FF", conn)
+	recolor256("#F0F0FF", conn)
 });
 
 //create a 256bit table

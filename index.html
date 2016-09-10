@@ -14,7 +14,6 @@
         stroke-width:1px;
       }
 
-
       /* Add Animation */
       @-webkit-keyframes animatetop {
           from {top: -300px; opacity: 0}
@@ -32,11 +31,13 @@
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
   </head>
   <body>
-    Select color(Hex):
-    <input style="min-width:25%;padding:0;" type="color" id="colorChoice" value="#ff0000">
-    <div id="chart"></div>
+    <div id="color_selector" style="position:fixed;top:0;width:100%;background-color:white">
+    Select color(Hex):<input style="min-width:25%;padding:0;height:25px;" type="color" id="colorChoice" value="#ff0000">
+    </div>
+    <div id="chart" style="margin-top:30px"></div>
     </div>
     <script type="text/javascript">
+    
       var array_info,
           array_id_mapping = {}, // maps array_id to its position in array_info
           metric = 'read_latency',
