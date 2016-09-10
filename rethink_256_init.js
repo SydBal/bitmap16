@@ -13,7 +13,7 @@ var dbConfig = {
     port: 28015,
     db: 'rtaheatmap',
     tables: {
-  		bitmap: "bitmap"
+  		bitmap: "bitmapinf"
     }
 };
 
@@ -24,30 +24,30 @@ r.init({
 	    db: dbConfig.db
     },[
     	{
-    		name: 'bitmap',
+    		name: dbConfig.tables.bitmap,
     		primaryKey: 'id'
     	}
     ]
 ).then(function (conn) {
-	//generate256table(conn)
+	generateCells(1024,conn)
 	//getBitmapInOrder(conn)
-	recolor256("#F0F0FF", conn)
+	//recolor256("#F0F0FF", conn)
 });
 
 //create a 256bit table
-function generate256table(conn) {
-	generate256row(conn, 256)
+function generateCells(num, conn) {
+	generateCellsInOrder(conn, num)
 };
 
 //generate rows in order
-function generate256row(conn, iter){
+function generateCellsInOrder(conn, iter){
 	if(iter>0){
 		r.db(dbConfig.db).table(dbConfig.tables.bitmap).insert({id:iter,color:"#000000"}).run(conn, function(err, result) {
 	        if (err) throw err;
-	        generate256row(conn, iter-1);
+	        generateCellsInOrder(conn, iter-1);
 	    });
 	}else{
-		console.log("Done generating 256bitmap")
+		console.log("Done generating "+iter+"bitmap")
 	}
 }
 

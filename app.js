@@ -16,7 +16,7 @@ var dbConfig = {
   port: 28015,
   db: 'rtaheatmap',
   tables: {
-    bitmap: 'bitmap',
+    bitmap: 'bitmapinf',
   }
 };
 
