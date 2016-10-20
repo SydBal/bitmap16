@@ -40,6 +40,7 @@ io.on('connection', function (socket) {
     });
   });
 
+  /* AddRow to the infinite bitmap */
   socket.on('addRow', function(data){
     console.log('Add that row!');
   });
