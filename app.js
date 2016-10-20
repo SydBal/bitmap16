@@ -37,8 +37,11 @@ io.on('connection', function (socket) {
   socket.on('click', function (data){
     r.db(dbConfig.db).table(dbConfig.tables.bitmap).replace({id:data.id,color:data.color}).run(conn2, function(err, result) {
       if (err) throw err;
-      console.log(result)
     });
+  });
+
+  socket.on('addRow', function(data){
+    console.log('Add that row!');
   });
 });
 

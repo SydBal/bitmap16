@@ -24,18 +24,19 @@
           from {top: -300px; opacity: 0}
           to {top: 0; opacity: 1}
       }
-
     </style>
     <script type="text/javascript" src="http://d3js.org/d3.v3.js"></script>
     <script type="text/javascript" src="/socket.io/socket.io.js"></script>
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
   </head>
+
   <body>
     <div id="color_selector" style="position:fixed;top:0;width:100%;background-color:white;box-shadow: 0 3px 3px rgba(0,0,0,0.16), 0 3px 3px rgba(0,0,0,0.23);npm">
     Select color(Hex):<input style="min-width:25%;padding:0;height:25px;" type="color" id="colorChoice" value="#ff0000">
     </div>
     <div id="chart" style="margin-top:30px"></div>
-    </div>
+    <button id="addRow_btn" style="width:100%">Add row button goes here.</button>
+    
     <script type="text/javascript">
     
       var array_info,
@@ -52,6 +53,7 @@
         array_info.sort(function(a, b){
           return a.id - b.id;
         })
+        //then create mapping
         for (i = 0; i < array_info.length; i++){
           array_id_mapping[array_info[i].id] = i
         }
@@ -108,8 +110,6 @@
         };
       });
 
-
-
       /* refresh graph on changefeed update */
       socket.on('update', function (data) {
         socket.emit('reply', 'got update');
@@ -124,6 +124,11 @@
           refreshGraph(array_info, data);
         }
       });
+
+      /* Add Row button */
+      $('#addRow_btn').click(function(){
+        socket.emit('addRow', true)
+      })
 
       //onhover tooltip
       var tooltip = d3.select("body")
@@ -202,6 +207,5 @@
 
 
     </script>
-
   </body>
 </html>
