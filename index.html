@@ -168,8 +168,8 @@
         /* click action on cell */
         /* TODO: OPEN POPUP */
         cards.on("click", function(data) {
-          socket.emit("click", {id:data.id,color:$('#colorChoice').val()})
           d3.select(this).style("fill","grey");
+          socket.emit("click", {id:data.id,color:$('#colorChoice').val()})
         });
 
         cards.transition()
