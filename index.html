@@ -168,9 +168,22 @@
         /* click action on cell */
         /* TODO: OPEN POPUP */
         cards.on("click", function(data) {
-          d3.select(this).style("fill","grey");
+          //this conditional is here because changefeeds only update if cell color changes
+          //this is tough because color comes in many formats
+          console.log(rgb2hex(d3.select(this).style('fill')))
+          if(false){
+            d3.select(this).style("fill","grey");
+          }
           socket.emit("click", {id:data.id,color:$('#colorChoice').val()})
         });
+
+        function rgb2hex(rgb){
+         rgb = rgb.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
+         return (rgb && rgb.length === 4) ? "#" +
+          ("0" + parseInt(rgb[1],10).toString(16)).slice(-2) +
+          ("0" + parseInt(rgb[2],10).toString(16)).slice(-2) +
+          ("0" + parseInt(rgb[3],10).toString(16)).slice(-2) : '';
+        }
 
         cards.transition()
              .duration(1500)
@@ -194,11 +207,6 @@
           return tooltip.style("visibility", "hidden");
         });*/
 
-        cards.transition()
-             .duration(1500)
-             .style("fill", function(d) { return d.color; });
-
-        cards.exit().remove();
       };
 
 
